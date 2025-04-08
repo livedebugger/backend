@@ -1,14 +1,21 @@
 from fastapi.testclient import TestClient
 from core import app
 
-client = TestClient(app)
 
+import websockets
+import asyncio
+client = TestClient(app)
 def test_health_check():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"status": "active"}
+    assert response.json() == {"status": "active"}  # Updated status message
+    
+async def test():
+    async with websockets.connect("ws://localhost:8000/ws/session") as ws:
+        for _ in range(3):
+            print(await ws.recv())
 
-
+asyncio.run(test())
 
 # import pytest
 # from fastapi.testclient import TestClient
