@@ -8,7 +8,7 @@ client = TestClient(app)
 def test_health_check():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"status": "active"}  # Updated status message
+    assert response.json() == {"status": "active"} 
     
 async def test():
     async with websockets.connect("ws://localhost:8000/ws/session") as ws:
