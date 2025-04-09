@@ -1,6 +1,6 @@
 # testing 
 
-> learn about the endpoints here: ../endpoints.md
+> learn about the endpoints [here](endpoints.md)
 
 
 1. install uv for fast pip installations
