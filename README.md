@@ -1,5 +1,8 @@
 # testing 
 
+> learn about the endpoints here: ../endpoints.md
+
+
 1. install uv for fast pip installations
 ```sh
 curl -LsSf https://astral.sh/uv/install.sh | sh
