@@ -31,7 +31,7 @@ app = FastAPI()
 groq = Groq(api_key=os.getenv("GROQ_API_KEY")) # init groq 
 
 def get_cursor_pos():
-        """Get current cursor position using Hyprland's CLI tool"""
+    """Get current cursor position using Hyprland's CLI tool"""
     try:
         out = subprocess.check_output(["hyprctl", "cursorpos"]).decode().strip()
         x_str, y_str = out.replace(",", "").split()
@@ -69,7 +69,7 @@ def capture_fullscreen():
         return None
 
 def crop_around_cursor(img, cx, cy, size=400):
-        """Crop 400x400 region around cursor position"""
+    """Crop 400x400 region around cursor position"""
     left = max(cx - size // 2, 0)
     upper = max(cy - size // 2, 0)
     right = left + size
@@ -82,7 +82,7 @@ def save_image(img, filename):
     except Exception as e:
         logger.error(f"Image save failed: {e}")
 def analyze_image(img):
-        """Analyze screen content using OCR + Groq AI"""
+    """Analyze screen content using OCR + Groq AI"""
     try:
         # extracting text 
         text = pytesseract.image_to_string(img)
