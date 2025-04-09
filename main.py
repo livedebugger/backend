@@ -1,26 +1,26 @@
-import uvicorn
 import asyncio
+import io
+import logging
+import os
+import subprocess
+
+import pytesseract
+import torch
+import uvicorn
+from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket
 from groq import Groq
-import pytesseract
-import subprocess
 from PIL import Image
-import io
-import os
-import logging
-from dotenv import load_dotenv
-import torch
 # from transformers import Blip2Processor, Blip2ForConditionalGeneration
-from transformers import AutoProcessor, AutoModelForVision2Seq
-
+from transformers import AutoModelForVision2Seq, AutoProcessor
 
 # Load model + processor
 processor = AutoProcessor.from_pretrained("llava-hf/llava-1.5-7b-hf")
 model = AutoModelForVision2Seq.from_pretrained(
     "llava-hf/llava-1.5-7b-hf",
-    torch_dtype=torch.float16,
-    device_map="auto"
-).eval()
+    torch_dtype=torch.float16,      # using half precision for efficiency 
+    device_map="auto"   # auto detection of gpu // install cuda drivers 
+).eval()    # setting model to evaluation mode 
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -28,9 +28,10 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 # FastAPI app
 app = FastAPI()
-groq = Groq(api_key=os.getenv("GROQ_API_KEY"))
+groq = Groq(api_key=os.getenv("GROQ_API_KEY")) # init groq 
 
 def get_cursor_pos():
+        """Get current cursor position using Hyprland's CLI tool"""
     try:
         out = subprocess.check_output(["hyprctl", "cursorpos"]).decode().strip()
         x_str, y_str = out.replace(",", "").split()
@@ -38,7 +39,7 @@ def get_cursor_pos():
         return x, y
     except Exception as e:
         logger.error(f"Cursor fetch failed: {e}")
-        return 960, 540
+        return 960, 540 # fallback to central pos 
 
 
 def analyze_visual_content(image):
@@ -47,7 +48,7 @@ def analyze_visual_content(image):
 
         inputs = processor(images=image, text=prompt, return_tensors="pt").to(model.device)
 
-        with torch.no_grad():
+        with torch.no_grad():   # disabling gradient calculation 
             output = model.generate(**inputs, max_new_tokens=100)
 
         caption = processor.batch_decode(output, skip_special_tokens=True)[0]
@@ -59,6 +60,7 @@ def analyze_visual_content(image):
 
     
 def capture_fullscreen():
+    """capturing full screen with grim // wayland compositer """
     try:
         proc = subprocess.run(["grim", "-"], stdout=subprocess.PIPE, timeout=2)
         return Image.open(io.BytesIO(proc.stdout))
@@ -67,6 +69,7 @@ def capture_fullscreen():
         return None
 
 def crop_around_cursor(img, cx, cy, size=400):
+        """Crop 400x400 region around cursor position"""
     left = max(cx - size // 2, 0)
     upper = max(cy - size // 2, 0)
     right = left + size
@@ -79,14 +82,19 @@ def save_image(img, filename):
     except Exception as e:
         logger.error(f"Image save failed: {e}")
 def analyze_image(img):
+        """Analyze screen content using OCR + Groq AI"""
     try:
+        # extracting text 
         text = pytesseract.image_to_string(img)
+
+        # creating diagnostic prompt 
         prompt = (
             "You are a debugging assistant. Here's the OCR text from the user's screen:\n\n"
             f"{text.strip()}\n\n"
             "Explain what it likely means, whether it's code or an error message. Be concise and useful."
         )
 
+        # getting AI analysis 
         response = groq.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": prompt}]
@@ -107,22 +115,23 @@ async def ws_debug(websocket: WebSocket):
 
     try:
         while True:
-            # Capture the screen region around the cursor
+            # capturing the screen region around the cursor
             img = capture_fullscreen()
             if img:
                 cx, cy = get_cursor_pos()
                 region = crop_around_cursor(img, cx, cy)
 
-                # Perform OCR to extract text
+                # OCR to extract text
                 extracted_text = pytesseract.image_to_string(region).strip()
 
-                # Analyze visual content if no significant text is found
+                # analyzing visual content if no significant text is found
                 if not extracted_text or len(extracted_text) < 10:
                     visual_analysis = analyze_visual_content(region)
                 else:
+                    # fallback 
                     visual_analysis = None
 
-                # Send the results via WebSocket
+                # prepring the results via WebSocket
                 await websocket.send_json({
                     "cursor_pos": [cx, cy],
                     "ocr_text": extracted_text,
