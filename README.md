@@ -4,6 +4,11 @@
 > learn about the endpoints [here](endpoints.md)
 
 
+## install postgresql and make sure its running
+the user credentials and the testing db will be created automatically 
+
+[here](https://www.postgresql.org/download/)
+
 
 ## run the following command to run the backend server 
 ```makefile
