@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import routes_sessions, routes_chat, routes_debug, routes_feed, routes_groq
+from api import routes_sessions, routes_chat, routes_debug, routes_feed, routes_groq
 import uvicorn
 app = FastAPI()
 

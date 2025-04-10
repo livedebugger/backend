@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
-from app.models import models
-from app.utils.groq_analyze import analyze_image
+from db.database import SessionLocal
+from models import models
+from utils.groq_analyze import analyze_image
 from PIL import Image
 import io
 
