@@ -8,7 +8,8 @@
    cp app/.env.example app/.env # or do it manually
    ```
 
-2. Follow this:
+2. Install [docker](https://docs.docker.com/get-started/get-docker/)
+3. Follow this:
 
 # Commands
 
