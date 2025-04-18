@@ -6,7 +6,7 @@ SHELL := /bin/bash
 start:
 	@echo "（　｀ハ´） Starting services..."
 	docker compose up -d --build
-	docker-compose logs -f app
+	docker compose logs -f app
 
 # Stop the services
 stop:
