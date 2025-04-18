@@ -1,47 +1,32 @@
-# Makefile for FastAPI App with Astral UV
+SHELL := /bin/bash
 
-VENV = app/.venv
-ACTIVATE = source $(VENV)/bin/activate
-ENV_FILE = app/.env
-ENV_EXAMPLE = app/.env.example
-DB_USER = live_user
-DB_PASS = live_pass
-DB_NAME = live_db
+.PHONY: start stop reset tests clean restart
 
-install:
-	@echo " Installing uv if not already installed..."
-	@if ! command -v uv >/dev/null 2>&1; then \
-		curl -LsSf https://astral.sh/uv/install.sh | sh; \
-	fi
-	@echo " Creating virtual environment if missing..."
-	@if [ ! -d "$(VENV)" ]; then \
-		cd app && uv venv; \
-	fi
-	@echo "📥 Installing dependencies with uv..."
-	cd app && uv pip install -r requirements.txt
+# Start the services in detached mode with build
+start:
+	@echo "（　｀ハ´） Starting services..."
+	docker compose up -d --build
+	docker-compose logs -f app
 
-init-env:
-	@echo "📁 Creating .env if missing..."
-	@if [ ! -f $(ENV_FILE) ]; then \
-		cp $(ENV_EXAMPLE) $(ENV_FILE); \
-		echo "🔐 Copied $(ENV_EXAMPLE) to $(ENV_FILE). Please update secrets manually."; \
-	fi
+# Stop the services
+stop:
+	@echo "(☝◞‸◟)☞ Stopping services..."
+	docker compose down
 
-setup-db:
-	@if [ "$$(uname)" != "Linux" ]; then \
-		echo "🪟 Skipping DB setup (non-Linux system)"; \
-	else \
-		echo "🐘 Creating PostgreSQL user and database..."; \
-		sudo -u postgres psql -c "DO \$$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '$(DB_USER)') THEN CREATE ROLE $(DB_USER) LOGIN PASSWORD '$(DB_PASS)'; END IF; END \$$;" || echo "⚠️ Role might already exist"; \
-		sudo -u postgres psql -c "CREATE DATABASE $(DB_NAME) OWNER $(DB_USER);" || echo "⚠️ Database might already exist"; \
-	fi
+# Reset the services, remove volumes, and rebuild
+reset:
+	@echo " (^^ゞ Resetting all services..."
+	docker compose down -v && docker compose up -d --build
 
-init-db:
-	@echo "🗄️  Initializing DB..."
-	$(ACTIVATE) && PYTHONPATH=. python app/init_db.py
+# Run tests inside the 'tests' container
+tests:
+	@echo " (=ↀωↀ=) Running tests..."
+	docker compose exec app pytest tests/ --cov=app --cov-report=term-missing
 
-run:
-	@echo "🚀 Starting FastAPI app..."
-	$(ACTIVATE) && uvicorn main:app --reload --app-dir app
+clean:
+	@echo "(/・・)ノ Cleaning up..."
+	docker compose down -v
+	rm -rf app/__pycache__ tests/__pycache__
 
-start: init-env install setup-db init-db run
+restart: stop start
+

@@ -1,20 +1,42 @@
-# testing 
+# testing
 
-> [!IMPORTANT]  
-> learn about the endpoints [here](endpoints.md)
+> [!IMPORTANT]
+> Learn about the endpoints [here](endpoints.md)
+
+1. Copy the environment variables // ask from team if you don't want to create them yourself
+   ```sh
+   cp app/.env.example app/.env # or do it manually
+   ```
+
+2. Follow this:
+
+# Commands
 
 
-## install postgresql and make sure its running
-the user credentials and the testing db will be created automatically 
+```sh
+make reset  # Cleans existing containers and starts fresh
+```
+---
 
-[here](https://www.postgresql.org/download/)
-
-
-## run the following command to run the backend server 
-```makefile
-    make start
+```sh
+make start  # Starts DB + app with live code reloading
 ```
 
-## go to this url to test the endpoints using Swagger 
+```sh
+make stop # Stops the containers
+```
+---
 
-[here](http://localhost:8000/docs)
+```sh
+make clean # Cleans the containers and cleans cache
+```
+
+### Testing
+
+```sh
+make tests  # Runs pytest suite # too lazy to implement (･ω<)☆
+```
+
+## Go to this URL to test the endpoints using Swagger
+
+[http://localhost:8000/docs](http://localhost:8000/docs)
