@@ -23,6 +23,5 @@ jobs:
             cd ~/vs-code/backend
             git pull origin main
             make reset
-            make start
           EOF
 
