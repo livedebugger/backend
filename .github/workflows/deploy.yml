@@ -1,0 +1,28 @@
+name: Deploying to VM (￣ー￣)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Copy SSH key
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy over SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ryu@35.184.102.243 << 'EOF'
+            cd /vs-code/backend
+            git pull origin main
+            make reset
+            make start
+          EOF
+
