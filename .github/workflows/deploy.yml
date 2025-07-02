@@ -19,7 +19,7 @@ jobs:
       
       - name: Deploy over SSH
         run: |
-          ssh -o StrictHostKeyChecking=no ryu@35.184.102.243 << 'EOF'
+          ssh -o StrictHostKeyChecking=no ryu@xx.x.xx.x.x << 'EOF'
             cd ~/vs-code/backend
             git pull origin main
             make reset
